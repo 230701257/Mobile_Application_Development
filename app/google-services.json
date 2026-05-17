@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "828489806673",
+    "project_id": "interviewpreptracker-5523f",
+    "storage_bucket": "interviewpreptracker-5523f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:828489806673:android:506b1fed7438fd7d6b9970",
+        "android_client_info": {
+          "package_name": "com.interviewprep.tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBKpyltR6z81sIgBGpGFNU3Uuw6bmDSyYs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
