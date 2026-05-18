@@ -1,5 +1,207 @@
+//package com.interviewprep.tracker.ui.screens.auth
+//
+//import androidx.compose.animation.AnimatedVisibility
+//import androidx.compose.animation.fadeIn
+//import androidx.compose.animation.slideInVertically
+//import androidx.compose.foundation.background
+//import androidx.compose.foundation.layout.*
+//import androidx.compose.foundation.rememberScrollState
+//import androidx.compose.foundation.shape.RoundedCornerShape
+//import androidx.compose.foundation.text.KeyboardActions
+//import androidx.compose.foundation.text.KeyboardOptions
+//import androidx.compose.foundation.verticalScroll
+//import androidx.compose.material.icons.Icons
+//import androidx.compose.material.icons.filled.Email
+//import androidx.compose.material.icons.filled.Lock
+//import androidx.compose.material.icons.filled.Visibility
+//import androidx.compose.material.icons.filled.VisibilityOff
+//import androidx.compose.material3.*
+//import androidx.compose.runtime.*
+//import androidx.compose.ui.Alignment
+//import androidx.compose.ui.Modifier
+//import androidx.compose.ui.focus.FocusDirection
+//import androidx.compose.ui.graphics.Brush
+//import androidx.compose.ui.platform.LocalFocusManager
+//import androidx.compose.ui.text.font.FontWeight
+//import androidx.compose.ui.text.input.ImeAction
+//import androidx.compose.ui.text.input.KeyboardType
+//import androidx.compose.ui.text.input.PasswordVisualTransformation
+//import androidx.compose.ui.text.input.VisualTransformation
+//import androidx.compose.ui.unit.dp
+//import androidx.hilt.navigation.compose.hiltViewModel
+//import androidx.lifecycle.compose.collectAsStateWithLifecycle
+//import com.interviewprep.tracker.model.AuthState
+//import com.interviewprep.tracker.ui.theme.BrandPrimary
+//import com.interviewprep.tracker.ui.theme.BrandSecondary
+//import com.interviewprep.tracker.viewmodel.AuthViewModel
+//
+//@Composable
+//fun LoginScreen(
+//    onNavigateToRegister: () -> Unit,
+//    onLoginSuccess: () -> Unit,
+//    viewModel: AuthViewModel = hiltViewModel()
+//) {
+//    val authState by viewModel.authState.collectAsStateWithLifecycle()
+//    val loginError by viewModel.loginError.collectAsStateWithLifecycle()
+//    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+//
+//    LaunchedEffect(authState) {
+//        if (authState is AuthState.Authenticated) onLoginSuccess()
+//    }
+//
+//    var email by remember { mutableStateOf("") }
+//    var password by remember { mutableStateOf("") }
+//    var passwordVisible by remember { mutableStateOf(false) }
+//    val focusManager = LocalFocusManager.current
+//    var visible by remember { mutableStateOf(false) }
+//
+//    LaunchedEffect(Unit) { visible = true }
+//
+//    Box(
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .background(
+//                Brush.verticalGradient(
+//                    listOf(
+//                        MaterialTheme.colorScheme.background,
+//                        MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
+//                    )
+//                )
+//            )
+//    ) {
+//        Column(
+//            modifier = Modifier
+//                .fillMaxSize()
+//                .verticalScroll(rememberScrollState())
+//                .padding(24.dp),
+//            horizontalAlignment = Alignment.CenterHorizontally
+//        ) {
+//            Spacer(Modifier.height(60.dp))
+//
+//            AnimatedVisibility(visible = visible, enter = fadeIn() + slideInVertically { -100 }) {
+//                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+//                    Box(
+//                        modifier = Modifier
+//                            .size(80.dp)
+//                            .background(
+//                                Brush.linearGradient(listOf(BrandPrimary, BrandSecondary)),
+//                                shape = RoundedCornerShape(24.dp)
+//                            ),
+//                        contentAlignment = Alignment.Center
+//                    ) {
+//                        Text("🎯", style = MaterialTheme.typography.displaySmall)
+//                    }
+//                    Spacer(Modifier.height(24.dp))
+//                    Text("Welcome Back!", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+//                    Text("Sign in to continue your interview prep",
+//                        style = MaterialTheme.typography.bodyMedium,
+//                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+//                }
+//            }
+//
+//            Spacer(Modifier.height(48.dp))
+//
+//            AnimatedVisibility(visible = visible, enter = fadeIn() + slideInVertically { 200 }) {
+//                Card(
+//                    modifier = Modifier.fillMaxWidth(),
+//                    shape = RoundedCornerShape(24.dp),
+//                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+//                ) {
+//                    Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+//
+//                        OutlinedTextField(
+//                            value = email,
+//                            onValueChange = { email = it; viewModel.clearLoginError() },
+//                            label = { Text("Email") },
+//                            leadingIcon = { Icon(Icons.Filled.Email, null) },
+//                            modifier = Modifier.fillMaxWidth(),
+//                            keyboardOptions = KeyboardOptions(
+//                                keyboardType = KeyboardType.Email,
+//                                imeAction = ImeAction.Next
+//                            ),
+//                            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+//                            singleLine = true,
+//                            shape = RoundedCornerShape(12.dp)
+//                        )
+//
+//                        OutlinedTextField(
+//                            value = password,
+//                            onValueChange = { password = it; viewModel.clearLoginError() },
+//                            label = { Text("Password") },
+//                            leadingIcon = { Icon(Icons.Filled.Lock, null) },
+//                            trailingIcon = {
+//                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+//                                    Icon(
+//                                        if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+//                                        null
+//                                    )
+//                                }
+//                            },
+//                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+//                            modifier = Modifier.fillMaxWidth(),
+//                            keyboardOptions = KeyboardOptions(
+//                                keyboardType = KeyboardType.Password,
+//                                imeAction = ImeAction.Done
+//                            ),
+//                            keyboardActions = KeyboardActions(onDone = {
+//                                focusManager.clearFocus()
+//                                if (email.isNotBlank() && password.isNotBlank())
+//                                    viewModel.signIn(email, password)
+//                            }),
+//                            singleLine = true,
+//                            shape = RoundedCornerShape(12.dp)
+//                        )
+//
+//                        if (loginError != null) {
+//                            Surface(
+//                                color = MaterialTheme.colorScheme.errorContainer,
+//                                shape = RoundedCornerShape(8.dp)
+//                            ) {
+//                                Text(
+//                                    loginError!!,
+//                                    modifier = Modifier.padding(12.dp),
+//                                    color = MaterialTheme.colorScheme.onErrorContainer,
+//                                    style = MaterialTheme.typography.bodySmall
+//                                )
+//                            }
+//                        }
+//
+//                        Button(
+//                            onClick = { viewModel.signIn(email, password) },
+//                            modifier = Modifier.fillMaxWidth().height(52.dp),
+//                            enabled = email.isNotBlank() && password.isNotBlank() && !isLoading,
+//                            shape = RoundedCornerShape(12.dp)
+//                        ) {
+//                            if (isLoading) {
+//                                CircularProgressIndicator(
+//                                    modifier = Modifier.size(20.dp),
+//                                    color = MaterialTheme.colorScheme.onPrimary,
+//                                    strokeWidth = 2.dp
+//                                )
+//                            } else {
+//                                Text("Sign In", style = MaterialTheme.typography.labelLarge)
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//
+//            Spacer(Modifier.height(24.dp))
+//
+//            Row(verticalAlignment = Alignment.CenterVertically) {
+//                Text("Don't have an account? ", style = MaterialTheme.typography.bodyMedium)
+//                TextButton(onClick = onNavigateToRegister) {
+//                    Text("Register", fontWeight = FontWeight.Bold)
+//                }
+//            }
+//        }
+//    }
+//}
 package com.interviewprep.tracker.ui.screens.auth
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
@@ -21,6 +223,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -28,12 +231,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.credentials.CredentialManager
+import androidx.credentials.CustomCredential
+import androidx.credentials.GetCredentialRequest
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
+import com.google.firebase.auth.FirebaseAuth
+import com.interviewprep.tracker.R
 import com.interviewprep.tracker.model.AuthState
 import com.interviewprep.tracker.ui.theme.BrandPrimary
 import com.interviewprep.tracker.ui.theme.BrandSecondary
 import com.interviewprep.tracker.viewmodel.AuthViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginScreen(
@@ -41,21 +253,32 @@ fun LoginScreen(
     onLoginSuccess: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
+
     val authState by viewModel.authState.collectAsStateWithLifecycle()
     val loginError by viewModel.loginError.collectAsStateWithLifecycle()
+    val googleError by viewModel.googleError.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
 
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
     LaunchedEffect(authState) {
-        if (authState is AuthState.Authenticated) onLoginSuccess()
+        if (authState is AuthState.Authenticated) {
+            onLoginSuccess()
+        }
     }
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
     val focusManager = LocalFocusManager.current
+
     var visible by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) { visible = true }
+    LaunchedEffect(Unit) {
+        visible = true
+    }
 
     Box(
         modifier = Modifier
@@ -69,6 +292,7 @@ fun LoginScreen(
                 )
             )
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -76,89 +300,175 @@ fun LoginScreen(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(60.dp))
 
-            AnimatedVisibility(visible = visible, enter = fadeIn() + slideInVertically { -100 }) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Spacer(modifier = Modifier.height(60.dp))
+
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn() + slideInVertically { -100 }
+            ) {
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
                     Box(
                         modifier = Modifier
                             .size(80.dp)
                             .background(
-                                Brush.linearGradient(listOf(BrandPrimary, BrandSecondary)),
+                                Brush.linearGradient(
+                                    listOf(
+                                        BrandPrimary,
+                                        BrandSecondary
+                                    )
+                                ),
                                 shape = RoundedCornerShape(24.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("🎯", style = MaterialTheme.typography.displaySmall)
+                        Text(
+                            text = "🎯",
+                            style = MaterialTheme.typography.displaySmall
+                        )
                     }
-                    Spacer(Modifier.height(24.dp))
-                    Text("Welcome Back!", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    Text("Sign in to continue your interview prep",
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = "Welcome Back!",
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Text(
+                        text = "Sign in to continue your interview prep",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
                 }
             }
 
-            Spacer(Modifier.height(48.dp))
+            Spacer(modifier = Modifier.height(48.dp))
 
-            AnimatedVisibility(visible = visible, enter = fadeIn() + slideInVertically { 200 }) {
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn() + slideInVertically { 200 }
+            ) {
+
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(24.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
                 ) {
-                    Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+                    Column(
+                        modifier = Modifier.padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
 
                         OutlinedTextField(
                             value = email,
-                            onValueChange = { email = it; viewModel.clearLoginError() },
+                            onValueChange = {
+                                email = it
+                                viewModel.clearLoginError()
+                            },
                             label = { Text("Email") },
-                            leadingIcon = { Icon(Icons.Filled.Email, null) },
+                            leadingIcon = {
+                                Icon(Icons.Filled.Email, null)
+                            },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Email,
                                 imeAction = ImeAction.Next
                             ),
-                            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) }),
+                            keyboardActions = KeyboardActions(
+                                onNext = {
+                                    focusManager.moveFocus(FocusDirection.Down)
+                                }
+                            ),
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp)
                         )
 
                         OutlinedTextField(
                             value = password,
-                            onValueChange = { password = it; viewModel.clearLoginError() },
+                            onValueChange = {
+                                password = it
+                                viewModel.clearLoginError()
+                            },
                             label = { Text("Password") },
-                            leadingIcon = { Icon(Icons.Filled.Lock, null) },
+                            leadingIcon = {
+                                Icon(Icons.Filled.Lock, null)
+                            },
                             trailingIcon = {
-                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+
+                                IconButton(
+                                    onClick = {
+                                        passwordVisible = !passwordVisible
+                                    }
+                                ) {
+
                                     Icon(
-                                        if (passwordVisible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                                        if (passwordVisible)
+                                            Icons.Filled.VisibilityOff
+                                        else
+                                            Icons.Filled.Visibility,
                                         null
                                     )
                                 }
                             },
-                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            visualTransformation =
+                                if (passwordVisible)
+                                    VisualTransformation.None
+                                else
+                                    PasswordVisualTransformation(),
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Password,
                                 imeAction = ImeAction.Done
                             ),
-                            keyboardActions = KeyboardActions(onDone = {
-                                focusManager.clearFocus()
-                                if (email.isNotBlank() && password.isNotBlank())
-                                    viewModel.signIn(email, password)
-                            }),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+
+                                    focusManager.clearFocus()
+
+                                    if (
+                                        email.isNotBlank() &&
+                                        password.isNotBlank()
+                                    ) {
+                                        viewModel.signIn(email, password)
+                                    }
+                                }
+                            ),
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp)
                         )
 
                         if (loginError != null) {
+
                             Surface(
                                 color = MaterialTheme.colorScheme.errorContainer,
                                 shape = RoundedCornerShape(8.dp)
                             ) {
+
                                 Text(
-                                    loginError!!,
+                                    text = loginError!!,
+                                    modifier = Modifier.padding(12.dp),
+                                    color = MaterialTheme.colorScheme.onErrorContainer,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+
+                        if (googleError != null) {
+
+                            Surface(
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+
+                                Text(
+                                    text = googleError!!,
                                     modifier = Modifier.padding(12.dp),
                                     color = MaterialTheme.colorScheme.onErrorContainer,
                                     style = MaterialTheme.typography.bodySmall
@@ -167,33 +477,141 @@ fun LoginScreen(
                         }
 
                         Button(
-                            onClick = { viewModel.signIn(email, password) },
-                            modifier = Modifier.fillMaxWidth().height(52.dp),
-                            enabled = email.isNotBlank() && password.isNotBlank() && !isLoading,
+                            onClick = {
+                                viewModel.signIn(email, password)
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            enabled =
+                                email.isNotBlank() &&
+                                        password.isNotBlank() &&
+                                        !isLoading,
                             shape = RoundedCornerShape(12.dp)
                         ) {
+
                             if (isLoading) {
+
                                 CircularProgressIndicator(
                                     modifier = Modifier.size(20.dp),
                                     color = MaterialTheme.colorScheme.onPrimary,
                                     strokeWidth = 2.dp
                                 )
+
                             } else {
-                                Text("Sign In", style = MaterialTheme.typography.labelLarge)
+
+                                Text(
+                                    text = "Sign In",
+                                    style = MaterialTheme.typography.labelLarge
+                                )
                             }
+                        }
+
+                        OutlinedButton(
+                            onClick = {
+
+                                coroutineScope.launch {
+
+                                    try {
+
+                                        val credentialManager =
+                                            CredentialManager.create(context)
+
+                                        val googleIdOption =
+                                            GetGoogleIdOption.Builder()
+                                                .setFilterByAuthorizedAccounts(false)
+                                                .setServerClientId(
+                                                    context.getString(
+                                                        R.string.default_web_client_id
+                                                    )
+                                                )
+                                                .setAutoSelectEnabled(false)
+                                                .build()
+
+                                        val request =
+                                            GetCredentialRequest.Builder()
+                                                .addCredentialOption(googleIdOption)
+                                                .build()
+
+                                        val result =
+                                            credentialManager.getCredential(
+                                                request = request,
+                                                context = context.findActivity()
+                                            )
+
+                                        val credential = result.credential
+
+                                        if (
+                                            credential is CustomCredential &&
+                                            credential.type ==
+                                            GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL
+                                        ) {
+
+                                            val googleCredential =
+                                                GoogleIdTokenCredential
+                                                    .createFrom(credential.data)
+
+                                            viewModel.signInWithGoogle(
+                                                googleCredential.idToken
+                                            )
+                                        }
+
+                                    } catch (e: GoogleIdTokenParsingException) {
+                                        e.printStackTrace()
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(52.dp),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+
+                            Text(
+                                text = "Continue with Google"
+                            )
                         }
                     }
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Don't have an account? ", style = MaterialTheme.typography.bodyMedium)
-                TextButton(onClick = onNavigateToRegister) {
-                    Text("Register", fontWeight = FontWeight.Bold)
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Text(
+                    text = "Don't have an account? ",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                TextButton(
+                    onClick = onNavigateToRegister
+                ) {
+
+                    Text(
+                        text = "Register",
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
+    }
+}
+
+private fun Context.findActivity(): Activity {
+
+    return when (this) {
+
+        is Activity -> this
+
+        is ContextWrapper -> baseContext.findActivity()
+
+        else -> throw IllegalStateException(
+            "No Activity found"
+        )
     }
 }

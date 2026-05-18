@@ -1,7 +1,73 @@
+//package com.interviewprep.tracker.data.remote
+//
+//import com.google.firebase.auth.FirebaseAuth
+//import com.google.firebase.auth.FirebaseUser
+//import com.interviewprep.tracker.model.AuthState
+//import com.interviewprep.tracker.model.User
+//import kotlinx.coroutines.channels.awaitClose
+//import kotlinx.coroutines.flow.Flow
+//import kotlinx.coroutines.flow.callbackFlow
+//import kotlinx.coroutines.tasks.await
+//import javax.inject.Inject
+//import javax.inject.Singleton
+//
+//@Singleton
+//class AuthRepository @Inject constructor(
+//    private val firebaseAuth: FirebaseAuth
+//) {
+//    val authStateFlow: Flow<AuthState> = callbackFlow {
+//        trySend(AuthState.Loading)
+//        val listener = FirebaseAuth.AuthStateListener { auth ->
+//            val user = auth.currentUser
+//            if (user != null) {
+//                trySend(AuthState.Authenticated(user.toUser()))
+//            } else {
+//                trySend(AuthState.Unauthenticated)
+//            }
+//        }
+//        firebaseAuth.addAuthStateListener(listener)
+//        awaitClose { firebaseAuth.removeAuthStateListener(listener) }
+//    }
+//
+//    val currentUser: FirebaseUser? get() = firebaseAuth.currentUser
+//
+//    val isLoggedIn: Boolean get() = firebaseAuth.currentUser != null
+//
+//    suspend fun signIn(email: String, password: String): Result<User> {
+//        return try {
+//            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
+//            val user = result.user ?: throw Exception("Sign in failed: no user returned")
+//            Result.success(user.toUser())
+//        } catch (e: Exception) {
+//            Result.failure(e)
+//        }
+//    }
+//
+//    suspend fun register(email: String, password: String, displayName: String): Result<User> {
+//        return try {
+//            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
+//            val user = result.user ?: throw Exception("Registration failed: no user returned")
+//            Result.success(user.toUser().copy(displayName = displayName))
+//        } catch (e: Exception) {
+//            Result.failure(e)
+//        }
+//    }
+//
+//    fun signOut() {
+//        firebaseAuth.signOut()
+//    }
+//
+//    private fun FirebaseUser.toUser() = User(
+//        uid = uid,
+//        email = email ?: "",
+//        displayName = displayName ?: email?.substringBefore("@") ?: "User"
+//    )
+//}
 package com.interviewprep.tracker.data.remote
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
 import com.interviewprep.tracker.model.AuthState
 import com.interviewprep.tracker.model.User
 import kotlinx.coroutines.channels.awaitClose
@@ -15,39 +81,100 @@ import javax.inject.Singleton
 class AuthRepository @Inject constructor(
     private val firebaseAuth: FirebaseAuth
 ) {
+
     val authStateFlow: Flow<AuthState> = callbackFlow {
         trySend(AuthState.Loading)
+
         val listener = FirebaseAuth.AuthStateListener { auth ->
             val user = auth.currentUser
+
             if (user != null) {
                 trySend(AuthState.Authenticated(user.toUser()))
             } else {
                 trySend(AuthState.Unauthenticated)
             }
         }
+
         firebaseAuth.addAuthStateListener(listener)
-        awaitClose { firebaseAuth.removeAuthStateListener(listener) }
+
+        awaitClose {
+            firebaseAuth.removeAuthStateListener(listener)
+        }
     }
 
-    val currentUser: FirebaseUser? get() = firebaseAuth.currentUser
+    val currentUser: FirebaseUser?
+        get() = firebaseAuth.currentUser
 
-    val isLoggedIn: Boolean get() = firebaseAuth.currentUser != null
+    val isLoggedIn: Boolean
+        get() = firebaseAuth.currentUser != null
 
-    suspend fun signIn(email: String, password: String): Result<User> {
+    suspend fun signIn(
+        email: String,
+        password: String
+    ): Result<User> {
+
         return try {
-            val result = firebaseAuth.signInWithEmailAndPassword(email, password).await()
-            val user = result.user ?: throw Exception("Sign in failed: no user returned")
+
+            val result = firebaseAuth
+                .signInWithEmailAndPassword(email, password)
+                .await()
+
+            val user = result.user
+                ?: throw Exception("Sign in failed")
+
             Result.success(user.toUser())
+
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    suspend fun register(email: String, password: String, displayName: String): Result<User> {
+    suspend fun register(
+        email: String,
+        password: String,
+        displayName: String
+    ): Result<User> {
+
         return try {
-            val result = firebaseAuth.createUserWithEmailAndPassword(email, password).await()
-            val user = result.user ?: throw Exception("Registration failed: no user returned")
-            Result.success(user.toUser().copy(displayName = displayName))
+
+            val result = firebaseAuth
+                .createUserWithEmailAndPassword(email, password)
+                .await()
+
+            val user = result.user
+                ?: throw Exception("Registration failed")
+
+            user.updateProfile(
+                com.google.firebase.auth.UserProfileChangeRequest.Builder()
+                    .setDisplayName(displayName)
+                    .build()
+            ).await()
+
+            Result.success(user.toUser())
+
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    // GOOGLE SIGN IN
+    suspend fun signInWithGoogle(
+        idToken: String
+    ): Result<User> {
+
+        return try {
+
+            val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+            val result = firebaseAuth
+                .signInWithCredential(credential)
+                .await()
+
+            val user = result.user
+                ?: throw Exception("Google sign in failed")
+
+            Result.success(user.toUser())
+
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -57,9 +184,13 @@ class AuthRepository @Inject constructor(
         firebaseAuth.signOut()
     }
 
-    private fun FirebaseUser.toUser() = User(
-        uid = uid,
-        email = email ?: "",
-        displayName = displayName ?: email?.substringBefore("@") ?: "User"
-    )
+    private fun FirebaseUser.toUser(): User {
+        return User(
+            uid = uid,
+            email = email ?: "",
+            displayName = displayName
+                ?: email?.substringBefore("@")
+                ?: "User"
+        )
+    }
 }
